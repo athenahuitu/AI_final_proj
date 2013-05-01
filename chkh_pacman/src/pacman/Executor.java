@@ -13,6 +13,7 @@ import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
 import pacman.controllers.KeyBoardInput;
 import pacman.controllers.examples.AggressiveGhosts;
+import pacman.controllers.examples.AwesomePacMan;
 import pacman.controllers.examples.Legacy;
 import pacman.controllers.examples.Legacy2TheReckoning;
 import pacman.controllers.examples.NearestPillPacMan;
@@ -63,7 +64,8 @@ public class Executor
 		boolean visual=true;
 //		exec.runGameTimed(new NearestPillPacMan(),new AggressiveGhosts(),visual);
 //		exec.runGameTimed(new StarterPacMan(),new StarterGhosts(),visual);
-		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
+		exec.runGameTimed(new AwesomePacMan(),new StarterGhosts(),visual);
+//		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
 		//*/
 		
 		/*

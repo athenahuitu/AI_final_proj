@@ -31,8 +31,8 @@ public final class AwesomePacMan extends Controller<MOVE>
 		
 	}
 	
-	private static final int DISTANCE_11=11;
-	private static final int DISTANCE_9=9;
+	private static final int DISTANCE_11=32;
+	private static final int DISTANCE_9=100;
 
 	/* (non-Javadoc)
 	 * @see pacman.controllers.Controller#getMove(pacman.game.Game, long)
@@ -80,7 +80,7 @@ public final class AwesomePacMan extends Controller<MOVE>
 		
 		for(GHOST ghost : GHOST.values()){
 			if(game.getGhostEdibleTime(ghost)>0){
-				int distance=game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost));
+				int distance=game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost),game.getGhostLastMoveMade(ghost));
 				existEdibleGhost = true;
 				if(distance<minDistance)
 				{
@@ -88,9 +88,11 @@ public final class AwesomePacMan extends Controller<MOVE>
 					minGhost=ghost;
 				}
 			}
-			
+		}
+		
+		for(GHOST ghost : GHOST.values()){
 			if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0)
-				if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost))<DISTANCE_11)
+				if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost),game.getGhostLastMoveMade(ghost))<DISTANCE_11)
 					powerPillIsTarget = true;
 		}
 		

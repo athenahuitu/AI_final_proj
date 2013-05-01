@@ -27,8 +27,8 @@ public final class AwesomePacMan extends Controller<MOVE>
 	}
 	
 	/* TODO */
-	/* Get the destination accordingly */
-	private int getDestination(Game game)
+	/* Get the target accordingly */
+	private int getTarget(Game game)
 	{
 		boolean existEdibleGhost = false;//Init: there is no edible ghost
 		boolean powerPillIsTarget = false;//Init: powerpill is not the target

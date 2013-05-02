@@ -38,7 +38,7 @@ public final class BFSPacman extends Controller<MOVE>
 		powerPillTarget = false;
 		int dest = getTarget(game);
 		int source = game.getPacmanCurrentNodeIndex();
-		if(!powerPillTarget) POWER = 10000;
+		if(!powerPillTarget) POWER = 100;
 		MOVE move = BFS(source, dest, game);
 		POWER = 1;
 //		try {

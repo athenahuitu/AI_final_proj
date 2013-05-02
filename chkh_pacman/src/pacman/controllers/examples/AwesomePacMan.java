@@ -18,12 +18,12 @@ public final class AwesomePacMan extends Controller<MOVE>
 	public static final int DEPTH = 20; // Search depth
 	
 	// Node Cost
-	private double EMPTY = 3; 
-	private double PILL = 2;
-	private double POWER = 1;
-	private double CORNERCOST = 100;
-	private double GHOST_IN_COST = 2000;
-	private double GHOST_OUT_COST = 500;
+	private double EMPTY = 5; 
+	private double PILL = 3;
+	private double POWER = 2;
+	private double CORNERCOST = 991;
+	private double GHOST_IN_COST = 2001;
+	private double GHOST_OUT_COST = 1751;
 	
 	private boolean powerPillTarget;
 	

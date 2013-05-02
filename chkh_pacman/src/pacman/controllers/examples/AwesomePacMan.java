@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
-import java.util.Random;
 import pacman.game.Game;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
@@ -19,29 +18,32 @@ public final class AwesomePacMan extends Controller<MOVE>
 	public static final int DEPTH = 10; // Search depth
 	
 	// Node Cost
-	public static final double EMPTY = 3; 
-	public static final double PILL = 2;
-	public static final double POWER = 1;
-	public static final double GHOST_IN_COST = 2000;
-	public static final double GHOST_OUT_COST = 500;
+	private double EMPTY = 3; 
+	private double PILL = 2;
+	private double POWER = 1;
+	private double GHOST_IN_COST = 2000;
+	private double GHOST_OUT_COST = 500;
 	
-	private Random rnd=new Random();
+	private boolean powerPillTarget;
 	
 	public AwesomePacMan() {
 		
 	}
 	
-	private static final int DISTANCE_11=32;
-	private static final int DISTANCE_9=100;
+	private static final int DISTANCE_11 = 32;
+	private static final int DISTANCE_9 = 100;
 
 	/* (non-Javadoc)
 	 * @see pacman.controllers.Controller#getMove(pacman.game.Game, long)
 	 */
 	public MOVE getMove(Game game,long timeDue)
 	{
+		powerPillTarget = false;
 		int dest = getTarget(game);
 		int source = game.getPacmanCurrentNodeIndex();
+		if(!powerPillTarget) POWER = 100;
 		MOVE move = AStar(source, dest, game);
+		POWER = 1;
 		return move;
 	}
 	
@@ -91,21 +93,28 @@ public final class AwesomePacMan extends Controller<MOVE>
 		}
 		
 		for(GHOST ghost : GHOST.values()){
-			if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0)
-				if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost),game.getGhostLastMoveMade(ghost))<DISTANCE_11)
-					powerPillIsTarget = true;
+			if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost) == 0)
+				if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost),game.getGhostLastMoveMade(ghost))
+						 < DISTANCE_11)
+				{
+						powerPillIsTarget = true;
+						this.powerPillTarget = true;
+				}
 		}
 		
 		
 		if(activePowerPills.length > 0 && !existEdibleGhost && powerPillIsTarget){
+			System.out.println("Go to power pill");
 			return nearestPowerPill;
 		}
 		
 		else if(existEdibleGhost && minDistance < DISTANCE_9){
+			System.out.println("Go to edible ghost");
 			return game.getGhostCurrentNodeIndex(minGhost);
 		}
 		
 		else if(activePills.length > 0){
+			System.out.println("Go to pill ");
 			return nearestPill;
 		}
 		
@@ -125,12 +134,11 @@ public final class AwesomePacMan extends Controller<MOVE>
 		branch(pathHeap, src, dest, game);
 		
 		while(true) {
-			PathNode minCostNode = pathHeap.poll();
-			// Find dest
-			if(minCostNode.current == dest || minCostNode.path.size() > DEPTH) {
-				return minCostNode.path.getFirst();
+			PathNode peekNode = pathHeap.poll();
+			if(peekNode.current == dest || peekNode.path.size() == DEPTH) {
+				return peekNode.path.getFirst();
 			}
-			branch(pathHeap, minCostNode, dest, game);
+			branch(pathHeap, peekNode, dest, game);
 		}
 	}
 	
@@ -208,16 +216,16 @@ public final class AwesomePacMan extends Controller<MOVE>
 		}
 		
 		/*
-		 * compute cost according our cost model
+		 * compute cost according to our cost model
 		 */
 		public void computeCost(int dest,  Game game) {
 			int distance = game.getShortestPathDistance(current, dest);
-			double heuristic = POWER + (distance - 1) * PILL;
+			double heuristic = 1 + (distance - 1) * PILL;
 			
 			// update node cost
-			if(game.isPillStillAvailable(current)) 
+			if(isInPath(game.getPowerPillIndices(), current) && game.isPillStillAvailable(current)) 
 				nodeCost += PILL;
-			else if(game.isPowerPillStillAvailable(current))
+			else if(isInPath(game.getPowerPillIndices(), current) && game.isPowerPillStillAvailable(current))
 				nodeCost += POWER;
 			else 
 				nodeCost += EMPTY;
@@ -237,7 +245,7 @@ public final class AwesomePacMan extends Controller<MOVE>
 				// If ghost is edible or prev ghost cost is GHOST_IN_COST, no need to update
 				if(game.isGhostEdible(ghost) || ghostCost[index] == GHOST_IN_COST) {
 					continue;
-				} if(index == current) { // the ghost is exactly at current position
+				} if(game.getGhostCurrentNodeIndex(ghost) == current) { // the ghost is exactly at current position
 					ghostCost[index] = GHOST_IN_COST;
 				}
 				else {

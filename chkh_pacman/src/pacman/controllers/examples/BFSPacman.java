@@ -1,6 +1,5 @@
 package pacman.controllers.examples;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -14,9 +13,9 @@ import pacman.controllers.Controller;
 /*
  * The Class RandomPacMan.
  */
-public final class AwesomePacMan extends Controller<MOVE>
+public final class BFSPacman extends Controller<MOVE>
 {
-	public static final int DEPTH = 15; // Search depth
+	public static final int DEPTH = 50; // Search depth
 	
 	// Node Cost
 	private double EMPTY = 3; 
@@ -24,16 +23,12 @@ public final class AwesomePacMan extends Controller<MOVE>
 	private double POWER = 1;
 	private double CORNERCOST = 20;
 	private double GHOST_IN_COST = 2000;
-	private double GHOST_OUT_COST = 1000;
+	private double GHOST_OUT_COST = 500;
 	
 	private boolean powerPillTarget;
 	
-	public AwesomePacMan() {
-		
-	}
-	
-	private static final int DISTANCE_11 = 11;
-	private static final int DISTANCE_9 = 9;
+	private static final int DISTANCE_11 = 20;
+	private static final int DISTANCE_9 = 50;
 
 	/* (non-Javadoc)
 	 * @see pacman.controllers.Controller#getMove(pacman.game.Game, long)
@@ -43,8 +38,8 @@ public final class AwesomePacMan extends Controller<MOVE>
 		powerPillTarget = false;
 		int dest = getTarget(game);
 		int source = game.getPacmanCurrentNodeIndex();
-		if(!powerPillTarget) POWER = 80;
-		MOVE move = AStar(source, dest, game);
+		if(!powerPillTarget) POWER = 10000;
+		MOVE move = BFS(source, dest, game);
 		POWER = 1;
 //		try {
 //			Thread.currentThread().sleep(100);
@@ -90,7 +85,7 @@ public final class AwesomePacMan extends Controller<MOVE>
 		
 		for(GHOST ghost : GHOST.values()){
 			if(game.getGhostEdibleTime(ghost)>0){
-				int distance=game.getShortestPathDistance(game.getGhostCurrentNodeIndex(ghost),current,game.getGhostLastMoveMade(ghost));
+				int distance=game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost),game.getGhostLastMoveMade(ghost));
 				existEdibleGhost = true;
 				if(distance<minDistance)
 				{
@@ -101,8 +96,8 @@ public final class AwesomePacMan extends Controller<MOVE>
 		}
 		
 		for(GHOST ghost : GHOST.values()){
-			if(game.getGhostEdibleTime(ghost) == 0 && game.getGhostLairTime(ghost) == 0)
-				if(game.getShortestPathDistance(game.getGhostCurrentNodeIndex(ghost),current,game.getGhostLastMoveMade(ghost))
+			if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost) == 0)
+				if(game.getShortestPathDistance(current,game.getGhostCurrentNodeIndex(ghost),game.getGhostLastMoveMade(ghost))
 						 < DISTANCE_11)
 				{
 						powerPillIsTarget = true;
@@ -111,13 +106,13 @@ public final class AwesomePacMan extends Controller<MOVE>
 		}
 		
 		
-		if(activePowerPills.length > 0  && powerPillIsTarget){
-			System.out.println("Go to power pill!!!!!!!!!!!!!!!!!!");
+		if(activePowerPills.length > 0 && !existEdibleGhost && powerPillIsTarget){
+			System.out.println("Go to power pill");
 			return nearestPowerPill;
 		}
 		
 		else if(existEdibleGhost && minDistance < DISTANCE_9){
-			//System.out.println("Go to edible ghost");
+			System.out.println("Go to edible ghost");
 			return game.getGhostCurrentNodeIndex(minGhost);
 		}
 		
@@ -134,28 +129,34 @@ public final class AwesomePacMan extends Controller<MOVE>
 	 * Ghost cost:
 	 * Corner cost:
 	 */
-	private MOVE AStar(int src, int dest, Game game) {
+	private MOVE BFS(int src, int dest, Game game) {
 		HeapNodeComparator comparator	 = new HeapNodeComparator();
 		PriorityQueue<PathNode> pathHeap = new PriorityQueue<PathNode>(10, comparator);
 		
 		// Branch on src node
 		branch(pathHeap, src, dest, game);
 		
+		PathNode minCostNode = null;
+		double minCost = 0;
+		
 		while(true) {
 			PathNode peekNode = pathHeap.poll();
+		
+			
 			if(peekNode.current == dest || peekNode.path.size() == DEPTH) {
 				return peekNode.path.getFirst();
 			}
+			
 			branch(pathHeap, peekNode, dest, game);
 		}
 	}
 	
 	// check if the item is on the path
-	public int isInPath(int[] path, int item) {
+	public boolean isInPath(int[] path, int item) {
 		for(int i = 0; i < path.length; i ++) {
-			if(path[i] == item) return i;
+			if(path[i] == item) return true;
 		}
-		return -1;
+		return false;
 	}
 	
 	private int getGhostIndex(GHOST	ghost) {
@@ -229,26 +230,17 @@ public final class AwesomePacMan extends Controller<MOVE>
 		/*
 		 * compute cost according to our cost model
 		 */
-		
 		public void computeCost(int dest,  Game game) {
 			int distance = game.getShortestPathDistance(current, dest);
 			double heuristic = 1 + (distance - 1) * PILL;
 			
 			// update node cost
-			int[] pills=game.getPillIndices();
-			int[] powerPills=game.getPowerPillIndices();
-			int ind;
-			if((ind = isInPath(pills, current)) != -1) {
-				if(game.isPillStillAvailable(ind))
-					nodeCost += PILL;
-			} else if((ind = isInPath(powerPills, current)) != -1) {
-				if(game.isPowerPillStillAvailable(ind)) {
-					System.out.println("Add power pill" + POWER);
-					nodeCost += POWER;
-				}
-			} else {
+			if(isInPath(game.getPowerPillIndices(), current) && game.isPillStillAvailable(current)) 
+				nodeCost += PILL;
+			else if(isInPath(game.getPowerPillIndices(), current) && game.isPowerPillStillAvailable(current))
+				nodeCost += POWER;
+			else 
 				nodeCost += EMPTY;
-			}
 			
 			// update ghost cost
 			double ghostCost = computeCurGhostCost(game);

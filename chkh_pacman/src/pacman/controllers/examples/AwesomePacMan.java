@@ -1,6 +1,5 @@
 package pacman.controllers.examples;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -22,19 +21,18 @@ public final class AwesomePacMan extends Controller<MOVE>
 	private double EMPTY = 3; 
 	private double PILL = 2;
 	private double POWER = 1;
-	private double CORNERCOST = 50;
+	private double CORNERCOST = 100;
 	private double GHOST_IN_COST = 2000;
-	private double GHOST_OUT_COST = 1000;
+	private double GHOST_OUT_COST = 500;
 	
 	private boolean powerPillTarget;
-	boolean ambush = false;
 	
 	public AwesomePacMan() {
 		
 	}
 	
-	private static final int DISTANCE_11 = 11;
-	private static final int DISTANCE_9 = 9;
+	private static final int DISTANCE_11 = 40;
+	private static final int DISTANCE_9 = 30;
 
 	/* (non-Javadoc)
 	 * @see pacman.controllers.Controller#getMove(pacman.game.Game, long)
@@ -80,7 +78,7 @@ public final class AwesomePacMan extends Controller<MOVE>
 		//get the nearest power pill
 		int nearestPowerPill = game.getClosestNodeIndexFromNodeIndex(current,targetPowerPillsIndices,DM.PATH);
 		
-		int disPacPower = game.getShortestPathDistance(current, nearestPowerPill);
+	
 		
 		int disPacEdibleGhost = Integer.MAX_VALUE; // pacman's distance to nearest edible ghost
 		int disPacGhost = Integer.MAX_VALUE; // pacman's distance to nearest ghost
@@ -124,91 +122,94 @@ public final class AwesomePacMan extends Controller<MOVE>
 			return nearestPowerPill;
 		} 
 		
-		//1
-		else if(disPacPower <= 5 && disPacGhost >= 4 && disPacGhost <= 8 && disPacGhostPower >= 7) {
-			ambush = true;
-			return current;
-		} 
-		
-		//2
-		else if(activePowerPills.length > 0 && !existEdibleGhost && ambush && 
-				(disPacGhost <= 4 || disPacGhostPower <=6) && disPacGhost != 0) {
-			ambush = false;
-			powerPillIsTarget = true;
-			this.powerPillTarget = true;
-			//System.out.println("2");
-			return nearestPowerPill;
-		}
-		
-		//3
-		else if(activePowerPills.length > 0 && !existEdibleGhost && disPacGhost <= 8 && disPacPower <=4
-				&& disPacGhost != 0) {
-			powerPillIsTarget = true;
-			this.powerPillTarget = true;
-			//System.out.println("3");
-			return nearestPowerPill;
-		}
-		
-		//4
-		else if(activePowerPills.length > 0 && !existEdibleGhost && disPacGhost <=8
-				&& disPacGhost != 0) {
-			powerPillIsTarget = true;
-			this.powerPillTarget = true;
-			//System.out.println("4 " + disPacGhost);
-			return nearestPowerPill;
-		}
-		
-		//5
-		else if(existEdibleGhost && disPacGhost <= 8 && disPacEdibleGhost <= 10) {
-			//System.out.println("5");
-			return game.getGhostCurrentNodeIndex(minGhost);
-		}
-		
-		//6
-		else if(activePills.length > 0 && disPacGhost <= 8) {
-			//System.out.println("6");
-			return nearestPill;
-		}
-		
-		//7
-		else if(existEdibleGhost && disPacGhost >= 9 && disPacEdibleGhost <= 10) {
-			//System.out.println("7");
-			return game.getGhostCurrentNodeIndex(minGhost);
-		}
-		
-		else if(activePills.length > 0){
-			//System.out.println("nearest pill");
-			return nearestPill;
-		}
-		else {
-			return nearestPowerPill;
-		}
-		
-//		for(GHOST ghost : GHOST.values()){
-//			if(game.getGhostEdibleTime(ghost) == 0 && game.getGhostLairTime(ghost) == 0)
-//				if(game.getShortestPathDistance(game.getGhostCurrentNodeIndex(ghost),current,game.getGhostLastMoveMade(ghost))
-//						 < DISTANCE_11)
-//				{
-//						powerPillIsTarget = true;
-//						this.powerPillTarget = true;
-//				}
-//		}
+//		//1
+//		else if(disPacPower <= 5 && disPacGhost >= 4 && disPacGhost <= 8 && disPacGhostPower >= 7) {
+//			ambush = true;
+//			return current;
+//		} 
 //		
-//		
-//		if(activePowerPills.length > 0  && powerPillIsTarget){
-//			System.out.println("Go to power pill!!!!!!!!!!!!!!!!!!");
+//		//2
+//		else if(activePowerPills.length > 0 && !existEdibleGhost && ambush && 
+//				(disPacGhost <= 4 || disPacGhostPower <=6) && disPacGhost != 0) {
+//			ambush = false;
+//			powerPillIsTarget = true;
+//			this.powerPillTarget = true;
+//			//System.out.println("2");
 //			return nearestPowerPill;
 //		}
 //		
-//		else if(existEdibleGhost && minDistance < DISTANCE_9){
-//			System.out.println("Go to edible ghost");
+//		//3
+//		else if(activePowerPills.length > 0 && !existEdibleGhost && disPacGhost <= 8 && disPacPower <=4
+//				&& disPacGhost != 0) {
+//			powerPillIsTarget = true;
+//			this.powerPillTarget = true;
+//			//System.out.println("3");
+//			return nearestPowerPill;
+//		}
+//		
+//		//4
+//		else if(activePowerPills.length > 0 && !existEdibleGhost && disPacGhost <=8
+//				&& disPacGhost != 0) {
+//			powerPillIsTarget = true;
+//			this.powerPillTarget = true;
+//			//System.out.println("4 " + disPacGhost);
+//			return nearestPowerPill;
+//		}
+//		
+//		//5
+//		else if(existEdibleGhost && disPacGhost <= 8 && disPacEdibleGhost <= 10) {
+//			//System.out.println("5");
+//			return game.getGhostCurrentNodeIndex(minGhost);
+//		}
+//		
+//		//6
+//		else if(activePills.length > 0 && disPacGhost <= 8) {
+//			//System.out.println("6");
+//			return nearestPill;
+//		}
+//		
+//		//7
+//		else if(existEdibleGhost && disPacGhost >= 9 && disPacEdibleGhost <= 10) {
+//			//System.out.println("7");
 //			return game.getGhostCurrentNodeIndex(minGhost);
 //		}
 //		
 //		else if(activePills.length > 0){
-//			System.out.println("Go to pill " + nearestPill);
+//			//System.out.println("nearest pill");
 //			return nearestPill;
 //		}
+//		else {
+//			return nearestPowerPill;
+//		}
+		
+		
+		for(GHOST ghost : GHOST.values()){
+			if(game.getGhostEdibleTime(ghost) == 0 && game.getGhostLairTime(ghost) == 0)
+				if(game.getShortestPathDistance(game.getGhostCurrentNodeIndex(ghost),current,game.getGhostLastMoveMade(ghost))
+						 < DISTANCE_11)
+				{
+						powerPillIsTarget = true;
+						this.powerPillTarget = true;
+				}
+		}
+		
+		
+		if(activePowerPills.length > 0  && powerPillIsTarget){
+			//System.out.println("Go to power pill!!!!!!!!!!!!!!!!!!");
+			return nearestPowerPill;
+		}
+		
+		else if(existEdibleGhost && disPacEdibleGhost < DISTANCE_9){
+			//System.out.println("Go to edible ghost");
+			return game.getGhostCurrentNodeIndex(minGhost);
+		}
+		
+		else if(activePills.length > 0){
+			//System.out.println("Go to pill " + nearestPill);
+			return nearestPill;
+		}
+		
+		return -1;
 		
 	}
 	
@@ -336,7 +337,10 @@ public final class AwesomePacMan extends Controller<MOVE>
 			// update ghost cost
 			double ghostCost = computeCurGhostCost(game);
 			// prev corner cost
-			if(game.isJunction(current)) cornerCost += CORNERCOST;
+			if(game.isJunction(current)) {
+				cornerCost += CORNERCOST;
+			}
+			
 			// Total cost
 			cost = heuristic + nodeCost + ghostCost;
 		}
@@ -347,22 +351,25 @@ public final class AwesomePacMan extends Controller<MOVE>
 			for(GHOST ghost : GHOST.values()) {
 				int index = getGhostIndex(ghost);
 				// If ghost is edible or prev ghost cost is GHOST_IN_COST, no need to update
-				if(game.isGhostEdible(ghost) || ghostCost[index] == GHOST_IN_COST) {
+				if(game.isGhostEdible(ghost) || ghostCost[index] == GHOST_IN_COST ||
+						game.getGhostLairTime(ghost) > 0) {
 					continue;
-				} if(game.getGhostCurrentNodeIndex(ghost) == current) { // the ghost is exactly at current position
+				} 
+				PredictGhost predictGhost = getPredictGhost(game, ghost);
+				int ghostIndex = predictGhost.ghostIndex;
+				MOVE lastMove = predictGhost.lastMove;
+				if(ghostIndex == current) { // the ghost is exactly at current position
 					ghostCost[index] = GHOST_IN_COST;
 				}
 				else {
-					int ghostIndex = game.getGhostCurrentNodeIndex(ghost);
-					MOVE ghostMove = game.getGhostLastMoveMade(ghost);
 					// The distance from ghost to current position, last move considered
-					int distance = game.getShortestPathDistance(ghostIndex, current, ghostMove);
+					int distance = game.getShortestPathDistance(ghostIndex, current, lastMove);
 					
 					// if it's initial state
 					if(distance == 0) {
 						ghostCost[index] = 0;
 					} else {
-						cost = GHOST_OUT_COST / (distance * distance);
+						cost = GHOST_OUT_COST / (distance );
 						if(cost > ghostCost[index]) ghostCost[index] = cost;
 					}
 				}
@@ -376,6 +383,23 @@ public final class AwesomePacMan extends Controller<MOVE>
 			return totalCost;
 		}
 		
+		public PredictGhost getPredictGhost(Game game, GHOST ghost) {
+			int pacman = current;
+			for(int i = path.size() - 1; i >= 0; i --) {
+				pacman = game.getNeighbour(pacman, path.get(i).opposite());	
+			}
+			
+			int ghostIndex = game.getGhostCurrentNodeIndex(ghost);
+			MOVE lastMove = game.getGhostLastMoveMade(ghost);
+			for(int i = 0; i < path.size(); i ++) {
+				lastMove = game.getNextMoveTowardsTarget(ghostIndex, pacman, lastMove, DM.PATH);
+				ghostIndex = game.getNeighbour(ghostIndex, lastMove);
+				pacman = game.getNeighbour(pacman, path.get(i));
+			}
+			
+			return new PredictGhost(ghostIndex, lastMove);
+		}
+		
 	}
 	
 	/**
@@ -387,6 +411,15 @@ public final class AwesomePacMan extends Controller<MOVE>
 			if(o1.cost > o2.cost) return 1;
 			if(o1.cost < o2.cost) return -1;
 			return 0;
+		}
+	}
+	
+	class PredictGhost {
+		public int ghostIndex;
+		MOVE lastMove;
+		public PredictGhost(int ghostIndex, MOVE lastMove) {
+			this.ghostIndex = ghostIndex;
+			this.lastMove = lastMove;
 		}
 	}
 }

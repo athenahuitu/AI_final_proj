@@ -15,12 +15,13 @@ import pacman.controllers.Controller;
  */
 public final class AwesomePacMan extends Controller<MOVE>
 {
-	public static final int DEPTH = 10; // Search depth
+	public static final int DEPTH = 50; // Search depth
 	
 	// Node Cost
 	private double EMPTY = 3; 
 	private double PILL = 2;
 	private double POWER = 1;
+	private double CORNERCOST = 20;
 	private double GHOST_IN_COST = 2000;
 	private double GHOST_OUT_COST = 500;
 	
@@ -30,8 +31,8 @@ public final class AwesomePacMan extends Controller<MOVE>
 		
 	}
 	
-	private static final int DISTANCE_11 = 32;
-	private static final int DISTANCE_9 = 100;
+	private static final int DISTANCE_11 = 20;
+	private static final int DISTANCE_9 = 50;
 
 	/* (non-Javadoc)
 	 * @see pacman.controllers.Controller#getMove(pacman.game.Game, long)
@@ -41,9 +42,15 @@ public final class AwesomePacMan extends Controller<MOVE>
 		powerPillTarget = false;
 		int dest = getTarget(game);
 		int source = game.getPacmanCurrentNodeIndex();
-		if(!powerPillTarget) POWER = 100;
+		if(!powerPillTarget) POWER = 10000;
 		MOVE move = AStar(source, dest, game);
 		POWER = 1;
+//		try {
+//			Thread.currentThread().sleep(100);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		return move;
 	}
 	
@@ -114,7 +121,7 @@ public final class AwesomePacMan extends Controller<MOVE>
 		}
 		
 		else if(activePills.length > 0){
-			System.out.println("Go to pill ");
+			System.out.println("Go to pill " + nearestPill);
 			return nearestPill;
 		}
 		
@@ -188,6 +195,7 @@ public final class AwesomePacMan extends Controller<MOVE>
 		int current; // the index of this pathNode
 		double cost; // total cost of this pathNode
 		double nodeCost;
+		double cornerCost;
 		double[] ghostCost;
 		
 		public PathNode(MOVE move, int current) {
@@ -196,6 +204,7 @@ public final class AwesomePacMan extends Controller<MOVE>
 			this.current = current;
 			this.ghostCost = new double[4];
 			this.nodeCost = 0;
+			this.cornerCost = 0;
 		}
 		
 		public PathNode(PathNode prevNode, MOVE move, int current) {
@@ -208,6 +217,7 @@ public final class AwesomePacMan extends Controller<MOVE>
 			path.add(move);
 			
 			this.nodeCost = prevNode.nodeCost;
+			this.cornerCost = prevNode.cornerCost;
 			this.current = current;
 			this.ghostCost = new double[4];
 			for(int i  = 0; i < ghostCost.length; i ++) {
@@ -233,6 +243,7 @@ public final class AwesomePacMan extends Controller<MOVE>
 			// update ghost cost
 			double ghostCost = computeCurGhostCost(game);
 			// prev corner cost
+			if(game.isJunction(current)) cornerCost += CORNERCOST;
 			// Total cost
 			cost = heuristic + nodeCost + ghostCost;
 		}
